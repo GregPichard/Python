@@ -14,3 +14,12 @@ data_grid, err = eikon.get_data("SPY",
 	{'SDate':'2018-12-14'}
 	)
 print(data_grid)
+weight = data_grid.loc[:, "Weight percent"]
+weight
+
+import matplotlib.pyplot as plt
+fig1, ax1 = plt.subplots()
+
+ax1.pie(weight, shadow = True)
+ax1.axis('equal')
+plt.show()
