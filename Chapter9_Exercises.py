@@ -1,0 +1,71 @@
+# Exercise 2 - Read files
+import numpy as np
+import matplotlib as mpl
+from matplotlib import mlab
+data1_csv = np.loadtxt('exercise3.csv', delimiter=',', skiprows = 1)
+data2_csv = np.genfromtxt('exercise3.csv', delimiter = ',')
+data3_csv = mpl.mlab.csv2rec('exercise3.csv')
+
+data1_txt = np.loadtxt('exercise3.txt', delimiter='\t', skiprows = 1)
+data2_txt = np.genfromtxt('exercise3.txt', delimiter='\t')
+
+print(type(data1_csv))
+print(type(data2_csv))
+print(type(data3_csv))
+
+print(type(data1_txt))
+print(type(data2_txt))
+
+# Exercise 3 - Parsing data
+dates = data1_csv[:, 0]
+SP500 = data1_csv[:, 1]
+XOM = data1_csv[:, 2]
+print(dates[0:10])
+print(SP500[0:10])
+print(XOM[0:10])
+
+# Exercise 4 - Saving data
+np.savez('exercise3', dates=dates, SP500=SP500, XOM=XOM)
+np.savez_compressed('exercise3_compressed', dates=dates, SP500=SP500, XOM=XOM)
+import scipy.io as sio
+saveData = {'dates':dates, 'SP500':SP500, 'XOM':XOM}
+sio.savemat('exercise3', saveData, do_compression=True)
+
+# Exercise 5 - New variable
+sumreturns = SP500 + XOM
+outputdata = np.hstack((dates, sumreturns))
+print(outputdata)
+
+# Exercise 6 - Export
+np.savetxt('exercise3_outputdata.csv', outputdata)
+
+# Exercise 7 - Reading using xlrd
+import xlrd
+wb = xlrd.open_workbook('exercise3.xls')
+sheetNames = wb.sheet_names()
+sheet = wb.sheet_by_name(sheetNames[0])
+data_import_xlrd = []
+for i in range(sheet.nrows):
+    data_import_xlrd.append(sheet.row_values(i))
+header = data_import_xlrd[0]
+print(header)
+numeric_data_import_xlrd = data_import_xlrd[1:]
+# print(numeric_data_import_xlrd)
+
+# Exercise 8 - Reading using openpyxl
+import openpyxl
+wb = openpyxl.load_workbook('exercise3.xlsx', data_only=True)
+sheetNames = wb.get_sheet_names()
+sheet = wb[sheetNames[0]]
+data_import_openpyxl = []
+rows = sheet.rows
+header = []
+#for col in rows[0]:
+ #   header.append(col.value)
+for row in sheet.iter_rows():
+    data_row = []
+    for col in row:
+        data_row.append(col.value)
+    data_import_openpyxl.append(data_row)
+numeric_data_import_openpyxl = np.array(data_import_openpyxl[1:])
+print(numeric_data_import_openpyxl[1:10])
