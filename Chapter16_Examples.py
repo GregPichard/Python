@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas import plotting
-#import tables
 
+# Example 1 : FRED
 codes = ['GDPC1', 'INDPRO', 'CPILFESL', 'UNRATE', 'GS10', 'GS1', 'BAA', 'AAA']
 names = ['Real GDP', 'Industrial production', 'Core CPI', 'Unemployment rate', '10 Year Yield', '1 Year Yield', 'Baa Yield', 'Aaa Yield']
 base_url = r'https://fred.stlouisfed.org/graph/fredgraph.csv?id={code}'
@@ -40,10 +40,38 @@ print(final)
 final.to_hdf('FRED_data.h5', 'FRED', complevel = 6, complib = 'zlib')
 final.to_excel('FRED_data.xlsx')
 
-ax = final[['GDP_growth', 'Ind_prod_growth', 'Unemp_rate']].plot(subplots=True)
+ax = final[['GDP_growth', 'IP_growth', 'Unemp_rate']].plot(subplots=True)
 fig = ax[0].get_figure()
 fig.savefig('FRED_data_line_plot.pdf')
 
-ax = scatter_matrix(final[['GDP_growth', 'Ind_prod_growth', 'Unemp_rate']], diagonal = 'kde')
+ax = pd.plotting.scatter_matrix(final[['GDP_growth', 'IP_growth', 'Unemp_rate']], diagonal = 'kde')
 fig = ax[0, 0].get_figure()
 fig.savefig('FRED_data_scatter_matrix.pdf')
+
+# Example 2 : NSW (National Supported Work Demonstration)
+import numpy as np
+from scipy import stats
+import seaborn as sns
+sns.set()
+
+NSW = pd.read_excel('NSW.xls', 'NSW')
+print(NSW.describe())
+NSW = NSW.rename(columns = {'Real income After ($)':'Income_after',
+                            'Real income Before ($)':'Income_before',
+                            'Education (years)':'Education'})
+NSW['Minority'] = NSW['Black'] + NSW['Hispanic']
+
+print(NSW.pivot_table(index = 'Treated'))
+print(NSW.pivot_table(index = 'Minority'))
+print(NSW.pivot_table(index = ['Minority', 'Married']))
+
+ax = NSW[['Income_before', 'Income_after']].plot(kind = 'kde', subplots = True)
+fig = ax[0].get_figure()
+fig.savefig('NSW_density.pdf')
+
+income_diff = NSW['Income_after'] - NSW['Income_before']
+t = income_diff[NSW['Treated']==1]
+nt = income_diff[NSW['Treated']==0]
+tstat = (t.mean() - nt.mean())/np.sqrt(t.var()/t.count() - nt.var()/nt.count())
+pval = 1 - stats.norm.cdf(tstat)
+print('T-stat: {0:.2f}, P-val: {1:.3f}'.format(tstat, pval))
